@@ -7,4 +7,5 @@ you may need to consider alternative solutions such as using a different WSGI se
 to a Unix-like environment.
 
 2. database table
-3. SQLAlchemy, menggunakan Flask-SQLAlchemy untuk berinteraksi dengan MySQL
+
+3. hapus dokter rework, nonaktifkan akun dokter
