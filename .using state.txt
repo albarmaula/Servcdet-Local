@@ -2,4 +2,5 @@ D:\ITTS dan Pembelajaran\02. Pembelajaran\Tugas Akhir\Project\myflaskenv\Scripts
 activate
 D:\ITTS dan Pembelajaran\02. Pembelajaran\Tugas Akhir\Project\
 waitress-serve --call "app:create_wsgi_app"
-http://localhost:8080 or http://127.0.0.1:8080
+http://localhost:8080
+or http://127.0.0.1:8080

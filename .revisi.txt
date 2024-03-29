@@ -1,7 +1,10 @@
-not using gunicorn
+1. not using gunicorn
 
 catatan:
 For running Flask applications on Windows, you can use the built-in Flask development server 
 for development purposes. However, when deploying Flask applications in production on Windows, 
 you may need to consider alternative solutions such as using a different WSGI server or deploying 
 to a Unix-like environment.
+
+2. database table
+3. SQLAlchemy, menggunakan Flask-SQLAlchemy untuk berinteraksi dengan MySQL
