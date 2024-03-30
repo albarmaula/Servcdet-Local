@@ -1,47 +1,23 @@
-{% extends "base.html" %} {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      rel="icon"
-      href="{{ url_for('static', filename='logo.ico') }}"
-      type="icon"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Inconsolata"
-    />
-    <style>
-      body {
-        font-family: "Radiance";
-      }
-      .headerbg {
-        background-image: var(--bs-gradient);
-      }
-      p {
-        font-size: 19px;
-        text-align: justify;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Content -->
-    
-
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-  </body>
-</html>
+{% extends "base.html" %} {% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+{% endblock %} {% block content %}
+<!-- Content -->
+<h1>User Page</h1>
+<div>
+  <h2>User Profile</h2>
+  <ul>
+    <li><strong>Username:</strong> {{ user_data.username }}</li>
+    <li><strong>Phone:</strong> {{ user_data.phone }}</li>
+    <li><strong>Location:</strong> {{ user_data.location }}</li>
+    <li><strong>Email:</strong> {{ user_data.email }}</li>
+    <!-- Jika Anda menyimpan URL gambar profil di database, gunakan kode berikut -->
+    <!-- <li><strong>Profile Picture:</strong> <img src="{{ user_data.profile_pict }}" alt="Profile Picture"></li> -->
+  </ul>
+  <!-- Jika Anda menyimpan gambar profil sebagai file di server, gunakan kode berikut -->
+</div>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+  crossorigin="anonymous"
+></script>
 {% endblock %}

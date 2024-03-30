@@ -1,132 +1,114 @@
 {% extends "base.html" %}
+{% block styles %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+{% endblock %}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ServcDet</title>
-    <link
-      rel="icon"
-      href="{{ url_for('static', filename='logo.ico') }}"
-      type="icon"
-    />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
-      crossorigin="anonymous"
-    />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css" />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css?family=Inconsolata"
-    />
-    <style>
-      body {
-        font-family: "Radiance";
-      }
-      .headerbg {
-        background-image: var(--bs-gradient);
-      }
-      p,
-      label {
-        font-size: 19px;
-        text-align: justify;
-      }
-    </style>
-  </head>
-  <body>
-    <!-- Content -->
-    <div
-      class="headerbg p-3 text-dark"
-      style="height: 100vh; background-color: white"
-    >
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6 mx-auto">
-            <form action="/admin/add" method="POST">
-              <div class="mb-3" style="margin-top: 60px">
-                <h1 class="text-center">Tambah Dokter</h1>
-                <label
-                  for="usernameRegForm"
-                  class="form-label"
-                  style="margin-top: 20px"
-                  >Nama Lengkap:</label
-                >
-                <input
-                  type="Text"
-                  class="form-control"
-                  name="usernameRegForm"
-                  id="usernameRegForm"
-                  placeholder="Masukkan nama lengkap dokter"
-                  style="border-color: #14335f"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label
-                  for="phoneRegForm"
-                  class="form-label"
-                  >No Telpon:</label
-                >
-                <input
-                  type="Text"
-                  class="form-control"
-                  name="phoneRegForm"
-                  id="phoneRegForm"
-                  style="border-color: #14335f"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label
-                  for="emailRegForm"
-                  class="form-label"
-                  >Email:</label
-                >
-                <input
-                  type="email"
-                  class="form-control"
-                  name="emailRegForm"
-                  id="emailRegForm"
-                  placeholder="name@example.com"
-                  style="border-color: #14335f"
-                  required
-                />
-              </div>
-              <div class="mb-3">
-                <label for="passRegForm" class="form-label">Password:</label>
-                <input
-                  type="password"
-                  name="passRegForm"
-                  id="passRegForm"
-                  class="form-control"
-                  style="border-color: #14335f"
-                  required
-                />
-              </div>
-              <input
-                type="submit"
-                value="Tambah"
-                class="btn btn-primary"
-                style="
-                  display: block;
-                  margin: 0 auto;
-                  background-color: #14335f;
-                "
-              >
-            </input>
-            </form>
+<!-- Content -->
+<div
+  class="headerbg p-3 text-dark"
+  style="height: 100vh; background-color: white"
+>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 mx-auto">
+        <form action="/admin/add" method="POST">
+          <div class="mb-3" style="margin-top: 60px">
+            <h1 class="text-center">Tambah Dokter</h1>
+            <label
+              for="usernameRegForm"
+              class="form-label"
+              style="margin-top: 20px"
+              >Nama Lengkap:</label
+            >
+            <input
+              type="Text"
+              class="form-control"
+              name="usernameRegForm"
+              id="usernameRegForm"
+              placeholder="Masukkan nama lengkap dokter"
+              style="border-color: #14335f"
+              required
+            />
           </div>
-        </div>
+          <div class="row">
+            <div class="mb-3 col-sm-6">
+              <label
+                for="phoneRegForm"
+                class="form-label"
+                >No Telpon:</label
+              >
+              <input
+                type="Text"
+                class="form-control"
+                name="phoneRegForm"
+                id="phoneRegForm"
+                style="border-color: #14335f"
+                required
+              />
+            </div>
+            <div class="mb-3 col-sm-6">
+              <label
+                for="locRegForm"
+                class="form-label"
+                >Domisili:</label
+              >
+              <input
+                type="Text"
+                class="form-control"
+                name="locRegForm"
+                id="locRegForm"
+                style="border-color: #14335f"
+                placeholder="ex: Kota Surabaya"
+                required
+              />
+            </div>
+          </div>
+          <div class="mb-3">
+            <label
+              for="emailRegForm"
+              class="form-label"
+              >Email:</label
+            >
+            <input
+              type="email"
+              class="form-control"
+              name="emailRegForm"
+              id="emailRegForm"
+              placeholder="name@example.com"
+              style="border-color: #14335f"                
+              required
+            />
+          </div>
+          <div class="mb-3">
+            <label for="passRegForm" class="form-label">Password:</label>
+            <input
+              type="password"
+              name="passRegForm"
+              id="passRegForm"
+              class="form-control"
+              style="border-color: #14335f"
+              required
+            />
+          </div>
+          <input
+            type="submit"
+            value="Tambah"
+            class="btn btn-primary"
+            style="
+              display: block;
+              margin: 0 auto;
+              background-color: #14335f;
+            "
+            >
+          </input>
+        </form>
       </div>
     </div>
-    <script
-      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
-      crossorigin="anonymous"
-    ></script>
-  </body>
-</html>
+  </div>
+</div>
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+  crossorigin="anonymous"
+></script>
 {% endblock %}
