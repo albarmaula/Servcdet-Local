@@ -10,6 +10,13 @@
 >
   <div class="container">
     <div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('admin') }}">Admin</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Tambah Pengguna</li>
+        </ol>
+      </nav>
       <div class="col-md-6 mx-auto">
         <form action="/admin/add" method="POST">
           <div class="mb-3" style="margin-top: 60px">
@@ -30,8 +37,7 @@
               required
             />
           </div>
-          <div class="row">
-            <div class="mb-3 col-sm-6">
+            <div class="mb-3">
               <label
                 for="phoneRegForm"
                 class="form-label"
@@ -46,23 +52,6 @@
                 required
               />
             </div>
-            <div class="mb-3 col-sm-6">
-              <label
-                for="locRegForm"
-                class="form-label"
-                >Domisili:</label
-              >
-              <input
-                type="Text"
-                class="form-control"
-                name="locRegForm"
-                id="locRegForm"
-                style="border-color: #14335f"
-                placeholder="ex: Kota Surabaya"
-                required
-              />
-            </div>
-          </div>
           <div class="mb-3">
             <label
               for="emailRegForm"
@@ -81,14 +70,19 @@
           </div>
           <div class="mb-3">
             <label for="passRegForm" class="form-label">Password:</label>
-            <input
-              type="password"
-              name="passRegForm"
-              id="passRegForm"
-              class="form-control"
-              style="border-color: #14335f"
-              required
-            />
+            <div class="input-group">
+              <input
+                type="password"
+                name="passRegForm"
+                id="passRegForm"
+                class="form-control"
+                style="border-color: #14335f"
+                required
+              />
+              <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                <i class="fa fa-eye-slash"></i>
+              </button>
+            </div>
           </div>
           <input
             type="submit"
@@ -111,4 +105,18 @@
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"
 ></script>
+<script src="https://kit.fontawesome.com/a076d05399.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const togglePassword = document.querySelector('#togglePassword');
+    const passwordInput = document.querySelector('#passRegForm');
+
+    togglePassword.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.querySelector('i').classList.toggle('fa-eye');
+        this.querySelector('i').classList.toggle('fa-eye-slash');
+    });
+});
+</script>
 {% endblock %}

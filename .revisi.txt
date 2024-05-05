@@ -9,3 +9,5 @@ to a Unix-like environment.
 2. database table
 
 3. hapus dokter rework, nonaktifkan akun dokter
+
+nik hapus

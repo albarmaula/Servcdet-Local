@@ -3,6 +3,22 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 {% endblock %}
 {% block content %}
+<style>
+  #dropArea {
+    width: 100%;
+    height: 300px;
+    border: 2px dashed #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+  }
+  #papSmearImagePreview {
+    max-width: 100%;
+    max-height: 100%;
+  }
+</style>
 <!-- Content -->
 <div
   class="headerbg p-3 text-dark"
@@ -10,6 +26,13 @@
 >
   <div class="container" style="margin-top: 60px">
     <div class="row">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('user') }}">Pengguna</a></li>
+          <li class="breadcrumb-item active" aria-current="page">Deteksi</li>
+        </ol>
+      </nav>
       <div class="col-md-6 mx-auto mb-3">
         <from action="/user/deteksi" method="POST">
           <h1 class="text-center">Form Deteksi Pap Smear</h1>
