@@ -96,7 +96,7 @@
       <thead class="thead-light">
           <tr>
               <th scope="col">ID</th>
-              <th scope="col">Waktu dan Tanggal</th>
+              <th scope="col">Tanggal dan Waktu</th>
               <th scope="col">Nama Pasien</th>
               <th scope="col">Umur Pasien</th>
               <th scope="col">Label</th>
@@ -105,17 +105,84 @@
       </thead>
       <tbody>
           {% for detection_row in detection_data %}
-              <tr>
-                  <td>{{ detection_row[0] }}</td>
-                  <td>{{ detection_row[3] }}</td>
-                  <td>{{ detection_row[4] }}</td>
-                  <td>{{ detection_row[6] }}</td>
-                  <td>{{ detection_row[2] }}</td>
-                  <td><a class="btn btn-primary" href=""><i class="fa fa-eye"></i></a></td>
-              </tr>
+          <tr>
+            <td>{{ detection_row[0] }}</td>
+            <td>{{ detection_row[3] }}</td>
+            <td>{{ detection_row[4] }}</td>
+            <td>{{ detection_row[6] }}</td>
+            <td>{{ detection_row[2] }}</td>
+            <td>
+              <button
+                class="btn btn-primary btn-detail"
+                data-id="{{ detection_row[0] }}"
+                data-image="{{ detection_row[1] }}"
+                data-label="{{ detection_row[2] }}"
+                data-datetime="{{ detection_row[3] }}"
+                data-patient="{{ detection_row[4] }}"
+                data-phone="{{ detection_row[5] }}"
+                data-age="{{ detection_row[6] }}"
+                data-note="{{ detection_row[7] }}"
+              >
+                <i class="fa fa-eye"></i>
+              </button>
+            </td>
+          </tr>
           {% endfor %}
       </tbody>
     </table>
+  </div>
+</div>
+
+<!-- Modal Detail Detection -->
+<div class="modal fade" id="detailDetectionModal" tabindex="-1" aria-labelledby="detailDetectionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 90%; max-height: 90%;">
+    <div class="modal-content">
+      <div class="row">
+        <div class="form-group col-md-6">
+          <img class="img-fluid" id="detailImage" alt="Image" />
+        </div>
+        <div class="form-group col-md-6">
+          <div class="modal-header">
+            <h5 class="modal-title" id="detailDetectionModalLabel">Detail Data</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body table-responsive" style="max-height: 450px; overflow-y: auto;">
+            <table class="table table-hover">
+              <tbody>
+                <tr>
+                  <th scope="row" style="width:30%">ID</th>
+                  <td id="detailID" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">Waktu dan Tanggal</th>
+                  <td id="detailDateTime" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">Nama Pasien</th>
+                  <td id="detailPatientName" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">No. Telepon Pasien</th>
+                  <td id="detailPatientPhone" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">Umur Pasien</th>
+                  <td id="detailPatientAge" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">Label</th>
+                  <td id="detailLabel" style="text-align: justify;"></td>
+                </tr>
+                <tr>
+                  <th scope="row" style="width:30%">Catatan</th>
+                  <td id="detailNote" style="text-align: justify;"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -124,7 +191,35 @@
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"
 ></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
 <script>
+  $(document).ready(function () {
+    $(".btn-detail").click(function () {
+      var id = $(this).data("id");
+      var image = $(this).data("image");
+      var label = $(this).data("label");
+      var datetime = $(this).data("datetime");
+      var patient = $(this).data("patient");
+      var phone = $(this).data("phone");
+      var age = $(this).data("age");
+      var note = $(this).data("note");
+
+      $("#detailID").text(id);
+      $("#detailImage").attr(
+        "src",
+        "{{ url_for('static', filename='uploads/') }}" + image
+      );
+      $("#detailLabel").text(label);
+      $("#detailDateTime").text(datetime);
+      $("#detailPatientName").text(patient);
+      $("#detailPatientPhone").text(phone);
+      $("#detailPatientAge").text(age);
+      $("#detailNote").text(note);
+
+      $("#detailDetectionModal").modal("show");
+    });
+  });
   function replaceImgWithInput() {
     var imgElement = document.getElementById("profilePictureImg");
     var inputFile = document.createElement("input");
