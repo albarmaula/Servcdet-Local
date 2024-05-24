@@ -5,14 +5,14 @@
 {% block content %}
 <!-- Profil Pengguna -->
 <div
-  class="headerbg p-3 text-dark mt-4"
+  class="headerbg p-3 text-dark"
   style="height: auto; background-color: white"
 >
   <div class="container">
     <div class="row">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="color: #14335f;">Beranda</a></li>
           <li class="breadcrumb-item active" aria-current="page">Pengguna</li>
         </ol>
       </nav>
@@ -44,7 +44,6 @@
             id="editbutton"
             value="Ubah"
           >
-          </input>
         </form>
         {% else %}
         <form
@@ -72,7 +71,6 @@
             id="editbutton"
             value="Ubah"
           >
-          </input>
         </form>
         {% endif %}
         <div style="margin-left: 20px;">
@@ -85,15 +83,16 @@
   </div>
 </div>
 
-<!-- Tabel -->
+<!-- Tabel Deteksi -->
 <div
   class="headerbg p-3 text-dark mt-4 mb-5"
   style="height: auto; background-color: white"
 >
-  <div class="container table-responsive" style="text-align: center;">
+  <div class="container" style="text-align: center;">
     <h3>Riwayat Deteksi</h3>
-    <table class="table table-striped table-hover table-bordered">
-      <thead class="thead-light">
+    <input type="text" id="searchInput1" onkeyup="searchTable1()" placeholder="Cari dokter (Tanggal dan Waktu/Nama Pasien)" class="form-control mb-3">
+    <table class="table table-striped table-hover table-default" id="dataTable1">
+      <thead class="thead-primary">
           <tr>
               <th scope="col">ID</th>
               <th scope="col">Tanggal dan Waktu</th>
@@ -113,7 +112,8 @@
             <td>{{ detection_row[2] }}</td>
             <td>
               <button
-                class="btn btn-primary btn-detail"
+                class="btn text-white btn-detail"
+                style="background-color: #14335f;"
                 data-id="{{ detection_row[0] }}"
                 data-image="{{ detection_row[1] }}"
                 data-label="{{ detection_row[2] }}"
@@ -122,6 +122,7 @@
                 data-phone="{{ detection_row[5] }}"
                 data-age="{{ detection_row[6] }}"
                 data-note="{{ detection_row[7] }}"
+                data-conf="{{detection_row[9]}}"
               >
                 <i class="fa fa-eye"></i>
               </button>
@@ -130,55 +131,75 @@
           {% endfor %}
       </tbody>
     </table>
+    <nav aria-label="Page navigation example">
+      <ul class="pagination justify-content-center">
+          {% for page_num in range(1, (total // per_page) + 2) %}
+          <li class="page-item {% if page == page_num %}active{% endif %}">
+              <a class="page-link" href="{{ url_for('user', page=page_num) }}"
+                style="{% if page == page_num %}color: white; background-color: #14335f;{% endif %}"
+                >{{ page_num }}</a>
+          </li>
+          {% endfor %}
+      </ul>
+  </nav>
   </div>
 </div>
 
 <!-- Modal Detail Detection -->
 <div class="modal fade" id="detailDetectionModal" tabindex="-1" aria-labelledby="detailDetectionModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 90%; max-height: 90%;">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
     <div class="modal-content">
-      <div class="row">
-        <div class="form-group col-md-6">
-          <img class="img-fluid" id="detailImage" alt="Image" />
-        </div>
-        <div class="form-group col-md-6">
-          <div class="modal-header">
-            <h5 class="modal-title" id="detailDetectionModalLabel">Detail Data</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header">
+        <h5 class="modal-title" id="detailDetectionModalLabel">Detail Data</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 d-flex align-items-center justify-content-center">
+            <img class="img-fluid" id="detailImage" alt="Image" style="max-height: 100%; width: 100%;"/>
           </div>
-          <div class="modal-body table-responsive" style="max-height: 450px; overflow-y: auto;">
-            <table class="table table-hover">
-              <tbody>
-                <tr>
-                  <th scope="row" style="width:30%">ID</th>
-                  <td id="detailID" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">Waktu dan Tanggal</th>
-                  <td id="detailDateTime" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">Nama Pasien</th>
-                  <td id="detailPatientName" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">No. Telepon Pasien</th>
-                  <td id="detailPatientPhone" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">Umur Pasien</th>
-                  <td id="detailPatientAge" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">Label</th>
-                  <td id="detailLabel" style="text-align: justify;"></td>
-                </tr>
-                <tr>
-                  <th scope="row" style="width:30%">Catatan</th>
-                  <td id="detailNote" style="text-align: justify;"></td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="col-md-6">
+            <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+              <table class="table table-hover">
+                <tbody>
+                  <tr>
+                    <th scope="row" style="width:30%">ID</th>
+                    <td id="detailID" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">Waktu dan Tanggal</th>
+                    <td id="detailDateTime" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">Nama Pasien</th>
+                    <td id="detailPatientName" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">No. Telepon Pasien</th>
+                    <td id="detailPatientPhone" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">Umur Pasien</th>
+                    <td id="detailPatientAge" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">Label</th>
+                    <td id="detailLabel" style="text-align: justify;"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width: 30%">Keyakinan (%)</th>
+                    <td id="detailConfidence" style="text-align: justify"></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" style="width:30%">Catatan</th>
+                    <td id="detailNote" style="text-align: justify;"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <button class="btn btn-danger mt-2" id="deleteButton">
+              <i class="fa fa-trash"></i>
+            </button>
           </div>
         </div>
       </div>
@@ -186,11 +207,34 @@
   </div>
 </div>
 
+<!-- Modal Konfirmasi -->
+<div class="modal fade" id="confirmDeletionModal" tabindex="-1" aria-labelledby="confirmDeletionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="confirmDeletionModalLabel">Konfirmasi Penghapusan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Apakah Anda yakin ingin menghapus data tersebut?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteButton">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <script
   src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"
 ></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <script>
@@ -204,6 +248,7 @@
       var phone = $(this).data("phone");
       var age = $(this).data("age");
       var note = $(this).data("note");
+      var conf = $(this).data("conf")
 
       $("#detailID").text(id);
       $("#detailImage").attr(
@@ -216,10 +261,12 @@
       $("#detailPatientPhone").text(phone);
       $("#detailPatientAge").text(age);
       $("#detailNote").text(note);
+      $("#detailConfidence").text(conf);
 
       $("#detailDetectionModal").modal("show");
     });
   });
+  
   function replaceImgWithInput() {
     var imgElement = document.getElementById("profilePictureImg");
     var inputFile = document.createElement("input");
@@ -230,5 +277,60 @@
     imgElement.parentNode.replaceChild(inputFile, imgElement);
     document.getElementById("editbutton").style.display ='block';
   }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var deleteButton = document.getElementById('deleteButton');
+    var confirmDeleteButton = document.getElementById('confirmDeleteButton');
+    var detailID = document.getElementById('detailID');
+    var confirmModal = new bootstrap.Modal(document.getElementById('confirmDeletionModal'));
+  
+    deleteButton.addEventListener('click', function() {
+      confirmModal.show();
+    });
+  
+    confirmDeleteButton.addEventListener('click', function() {
+      var detectionId = detailID.innerText;
+      fetch('/change_status_detection', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id: detectionId })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          confirmModal.hide();
+          location.reload();
+        } else {
+          console.error('Gagal mengubah status.');
+        }
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  });
+  //fungsi cari data tabel
+function searchTable1() {
+  var input, filter, table, tr, td, i, j, txtValue;
+  input = document.getElementById("searchInput1");
+  filter = input.value.toUpperCase();
+  table = document.getElementById("dataTable1");
+  tr = table.getElementsByTagName("tr");
+
+  for (i = 1; i < tr.length; i++) {
+      tr[i].style.display = "none";
+      td = tr[i].getElementsByTagName("td");
+
+      for (j = 1; j <= 3; j++) {
+          if (td[j]) {
+              txtValue = td[j].textContent || td[j].innerText;
+              if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                  tr[i].style.display = "";
+                  break;
+              }
+          }
+      }
+  }
+}
 </script>
 {% endblock %}

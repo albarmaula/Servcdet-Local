@@ -6,14 +6,16 @@
     <title>Image Classification</title>
 </head>
 <body>
-    <h1>Image Classification</h1>
-    <form method="post" action="/detect" enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit">Classify</button>
+    <h1>Upload an Image for Classification</h1>
+    <form action="/detect" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
     </form>
-    {% if prediction %}
-    <h2>Prediction:</h2>
-    <p>{{ prediction }}</p>
+    {% if label %}
+        <h2>Prediction</h2>
+        <p>Label: {{ label }}</p>
+        <p>Confidence: {{ confidence }}%</p>
+        
     {% endif %}
 </body>
 </html>

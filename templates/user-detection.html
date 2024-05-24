@@ -1,42 +1,26 @@
 {% extends "base.html" %} 
 {% block styles %}
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-{% endblock %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}" />
+{% endblock %} 
 {% block content %}
-<style>
-  #dropArea {
-    width: 100%;
-    height: 300px;
-    border: 2px dashed #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    box-sizing: border-box;
-    position: relative;
-    overflow: hidden;
-  }
-  #papSmearImagePreview {
-    max-width: 100%;
-    max-height: 100%;
-  }
-</style>
-<!-- Content -->
+<!-- User Detection -->
 <div
   class="headerbg p-3 text-dark"
-  style="height: 140vh; background-color: white"
+  style="height: auto; background-color: white"
 >
-  <div class="container" style="margin-top: 60px">
+  <div class="container">
     <div class="row">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('user') }}">Pengguna</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="color: #14335f;">Beranda</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('user') }}" style="color: #14335f;">Pengguna</a></li>
           <li class="breadcrumb-item active" aria-current="page">Deteksi</li>
         </ol>
       </nav>
-      <div class="col-md-6 mx-auto mb-3">
-        <from action="/user/deteksi" method="POST">
+      <div class="col-md-6 mx-auto mb-5">
+        <form action="{{ url_for('deteksi') }}" method="POST" enctype="multipart/form-data">
           <h1 class="text-center">Form Deteksi Pap Smear</h1>
-          <div>
+          <div style="margin-top: 60px" class="mb-3">
             <label for="nameDetForm" class="form-label">Nama Pasien:</label>
             <input
               type="text"
@@ -45,77 +29,57 @@
               class="form-control"
               style="border-color: #14335f"
               required
-            />
+            >
           </div>
-          <div>
-            <label for="ageDetForm" class="form-label">Umur Pasien:</label>
+          <div class="row">
+            <div class="form-group col-md-6">
+              <label for="ageDetForm" class="form-label">Umur Pasien:</label>
+              <input
+                type="number"
+                id="ageDetForm"
+                name="ageDetForm"
+                class="form-control"
+                style="border-color: #14335f"
+                required
+              >
+            </div>
+            <div class="form-group col-md-6">
+              <label for="phoneDetForm" class="form-label">No. Telpon Pasien:</label>
+              <input
+                type="text"
+                id="phoneDetForm"
+                name="phoneDetForm"
+                class="form-control"
+                style="border-color: #14335f"
+                required
+              >
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="imgDetForm">Pilih citra pap-smear yang akan dideteksi</label>
             <input
-              type="number"
-              id="ageDetForm"
-              name="ageDetForm"
+              type="file"
+              id="imgDetForm"
+              name="imgDetForm"
               class="form-control"
               style="border-color: #14335f"
               required
-            />
+            >
           </div>
-          <div>
-            <label for="idDetForm" class="form-label">NIK Pasien:</label>
+          <div class="mb-3">
+            <input type="hidden" name="user_id" value="{{ session['username'] }}">
             <input
-              type="text"
-              id="idDetForm"
-              name="idDetForm"
-              class="form-control"
-              style="border-color: #14335f"
-              required
-            />
+              type="submit"
+              value="Deteksi"
+              class="btn btn-primary"
+              style="
+                display: block;
+                margin: 0 auto;
+                background-color: #14335f;
+                margin-top: 20px;
+              "
+            >
           </div>
-          <div>
-            <label for="phoneDetForm" class="form-label">No. Telpon Pasien:</label>
-            <input
-              type="text"
-              id="phoneDetForm"
-              name="phoneDetForm"
-              class="form-control"
-              style="border-color: #14335f"
-              required
-            />
-          </div>
-          <label for="imgDetForm" class="form-label">Hasil Pap-smear:</label>
-          <input
-            type="file"
-            id="imgDetForm"
-            name="imgDetForm"
-            accept="image/*"
-            class="form-control-file mb-3"
-            style="border-color: #14335f"
-          />
-          <div id="dropArea" class="mb-3" style="border-color: #14335f">
-            <label class="text-center">
-              Atau drag and drop file gambar di sini.
-            </label>
-            <img id="papSmearImagePreview" src="#" alt="Preview Gambar" />
-            <button id="clearBtn" style="display: none" class="delete-btn">
-              &times;
-            </button>
-            <label
-              id="fileName"
-              style="display: none"
-              class="text-center"
-            ></label>
-          </div>
-          <input type="hidden" name="user_id" value="{{ session['username'] }}">
-          <input
-            type="submit"
-            value="Deteksi"
-            class="btn btn-primary"
-            style="
-              display: block;
-              margin: 0 auto;
-              background-color: #14335f;
-              margin-top: 20px;
-            "
-          >
-          </input>
       </form>
       </div>
     </div>
@@ -128,63 +92,12 @@
   integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
   crossorigin="anonymous"
 ></script>
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
 <script>
-  const dropArea = document.getElementById("dropArea");
-  const input = document.getElementById("papSmearImage");
-  const submitBtn = document.getElementById("submitBtn");
-  const clearBtn = document.getElementById("clearBtn");
-  const imagePreview = document.getElementById("papSmearImagePreview");
-  const fileName = document.getElementById("fileName");
-
-  dropArea.addEventListener("dragover", (event) => {
-    event.preventDefault();
-    dropArea.classList.add("highlight");
+  //fungsi ganti teks menjadi judul foto
+  $("#imgDetForm").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).next(".form-label").addClass("selected").html(fileName);
   });
-
-  dropArea.addEventListener("dragleave", () => {
-    dropArea.classList.remove("highlight");
-  });
-
-  dropArea.addEventListener("drop", (event) => {
-    event.preventDefault();
-    dropArea.classList.remove("highlight");
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      displayFile(file);
-      input.files = event.dataTransfer.files;
-      submitBtn.disabled = false;
-      clearBtn.style.display = "block";
-    }
-  });
-
-  input.addEventListener("change", () => {
-    const file = input.files[0];
-    if (file) {
-      displayFile(file);
-      submitBtn.disabled = false;
-      clearBtn.style.display = "block";
-    }
-  });
-
-  clearBtn.addEventListener("click", () => {
-    input.value = "";
-    imagePreview.src = "";
-    imagePreview.style.display = "none";
-    fileName.textContent = "";
-    fileName.style.display = "none";
-    clearBtn.style.display = "none";
-    submitBtn.disabled = true;
-  });
-
-  function displayFile(file) {
-    const reader = new FileReader();
-    reader.onload = function (e) {
-      imagePreview.src = e.target.result;
-      imagePreview.style.display = "block";
-      clearBtn.style.display = "block";
-      fileName.style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  }
 </script>
 {% endblock %}

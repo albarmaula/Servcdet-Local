@@ -6,12 +6,12 @@
 <!-- Content -->
 <div
   class="headerbg p-3 text-dark"
-  style="height: 100vh; background-color: white"
+  style="height: auto; background-color: white; margin-bottom: 100px"
 >
   <div class="container" style="margin-top: 60px">
     <div class="row">
-      <div class="col-md-6 mx-auto">
-        <form action="/login" method="POST">
+      <div class="col-md-6 mx-auto mb-5">
+        <form action="{{ url_for('login') }}" method="POST">
           <div class="mb-3">
             <h1 class="text-center">Login</h1>
             <label
@@ -28,7 +28,7 @@
               placeholder="name@example.com"
               style="border-color: #14335f"
               required
-            />
+            >
           </div>
           <div class="mb-3">
             <label for="passForm" class="form-label">Password:</label>
@@ -41,7 +41,7 @@
                 aria-describedby="passwordHelpBlock"
                 style="border-color: #14335f"
                 required
-              />
+              >
               <button class="btn btn-outline-secondary" type="button" id="togglePassword">
                 <i class="fa fa-eye-slash"></i>
               </button>
@@ -57,7 +57,6 @@
               background-color: #14335f;
             "
           >
-        </input>
         </form>
       </div>
     </div>
@@ -70,6 +69,7 @@
 ></script>
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 <script>
+  //fungsi show password
     document.addEventListener("DOMContentLoaded", function() {
         const togglePassword = document.querySelector('#togglePassword');
         const passwordInput = document.querySelector('#passForm');

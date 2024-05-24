@@ -12,8 +12,8 @@
     <div class="row">
       <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="{{ url_for('index') }}">Beranda</a></li>
-          <li class="breadcrumb-item"><a href="{{ url_for('admin') }}">Admin</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('index') }}" style="color: #14335f;">Beranda</a></li>
+          <li class="breadcrumb-item"><a href="{{ url_for('admin') }}" style="color: #14335f;">Admin</a></li>
           <li class="breadcrumb-item active" aria-current="page">Tambah Pengguna</li>
         </ol>
       </nav>
@@ -107,6 +107,7 @@
 ></script>
 <script src="https://kit.fontawesome.com/a076d05399.js"></script>
 <script>
+  // Fungsi show password
   document.addEventListener("DOMContentLoaded", function() {
     const togglePassword = document.querySelector('#togglePassword');
     const passwordInput = document.querySelector('#passRegForm');
