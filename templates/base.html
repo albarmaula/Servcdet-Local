@@ -48,49 +48,36 @@
         justify-content: center;
         align-items: center;
         position: fixed;
-        top: -60px; /* Muncul dari atas layar */
+        bottom: -60px;
         left: 50%;
         transform: translateX(-50%);
         height: 60px;
-        width: 90%; /* Lebar pesan */
+        width: 90%;
         padding: 10px 20px;
-        background-color: #007bff; /* Ganti warna sesuai keinginan Anda */
-        color: #fff;
         border-radius: 5px;
-        z-index: 9999; /* Pastikan nilai z-index cukup besar untuk muncul di atas konten lain */
+        z-index: 9999;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        font-family: Arial, sans-serif;
-        transition: top 0.5s ease; /* Animasi perubahan posisi */
+        font-family: "Radiance";
       }
     
-      /* Animasi */
-      .slide-down {
-        top: 20px; /* Muncul ke posisi yang diinginkan */
+      .slide-in {
+        bottom: 20px; 
       }
     
-      /* Animasi slide dari atas */
-      @keyframes slideIn {
-        from {
-          top: -60px; /* Muncul dari atas */
-        }
-        to {
-          top: 20px; /* Muncul ke posisi yang diinginkan */
-        }
-      }
-    
-      /* Gaya untuk jenis pesan */
       .alert p {
         margin: 0;
       }
     
       .alert-success {
-        background-color: #d4edda;
-        color: #155724;
+        background-color: #5cb85c;
+        color: #fff;
+        border-color: #5cb85c;
       }
     
       .alert-danger {
-        background-color: #f8d7da;
-        color: #721c24;
+        background-color: #d9534f;
+        color: #fff;
+        border-color: #d9534f;
       }
     </style>
   </head>
@@ -172,7 +159,7 @@
     <!-- Massage -->
     {% with messages = get_flashed_messages(with_categories=true) %} {% if
     messages %} {% for category, message in messages %}
-    <div id="flash-message" class="alert alert-{{ category }} slide-in slide-down">
+    <div id="flash-message" class="alert alert-{{ category }} slide-in">
       {{ message }}
     </div>
     {% endfor %} {% endif %} {% endwith %} {% block content %} {% endblock %}
@@ -196,7 +183,7 @@
       setTimeout(function () {
         var flashMessage = document.getElementById("flash-message");
         flashMessage.style.display = "none";
-      }, 3000);
+      }, 5000);
     </script>
   </body>
 </html>

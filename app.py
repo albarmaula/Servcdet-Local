@@ -118,10 +118,11 @@ def deteksi():
                         detection_id = cur.lastrowid
                         cur.close()
                         return redirect(url_for('user_hasil', detection_id=detection_id))
+                        flash('Data deteksi telah disimpan!', 'success')
             else:
                 return render_template("user-detection.html")
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
@@ -158,7 +159,7 @@ def user_hasil():
                 flash('ID deteksi tidak ditemukan!', 'danger')
                 return redirect(url_for('user'))
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
@@ -186,13 +187,13 @@ def change_status_detection():
                 flash('Status berhasil diperbarui!', 'success')
                 return jsonify(success=True)
             else:
-                flash('ID tidak valid.', 'danger')
+                flash('ID tidak valid!', 'danger')
                 return jsonify(success=False, message="Invalid ID"), 400
         else:
-            flash('ID tidak valid.', 'danger')
+            flash('ID tidak valid!', 'danger')
             return jsonify(success=False, message="Invalid ID"), 400
     else:
-        flash('Anda tidak diizinkan untuk melakukan aksi ini.', 'danger')
+        flash('Anda tidak diizinkan untuk melakukan aksi ini!', 'danger')
         return jsonify(success=False, message="Unauthorized"), 403
 
 #Done
@@ -248,13 +249,13 @@ def login():
                     flash('Login berhasil!', 'success')
                     return redirect(url_for('index'))
                 else:
-                    flash('Akun anda tidak dapat digunakan, silahkan hubungi admin!', 'danger')
+                    flash('Akun anda tidak dapat digunakan, Silahkan hubungi admin!', 'danger')
                     return redirect(url_for('logout'))
             else:
-                flash('Password salah. Silakan coba lagi.', 'danger')
+                flash('Password salah! Silakan coba lagi!', 'danger')
                 return redirect(url_for('login'))
         else:
-            flash('Email tidak ditemukan. Silakan coba lagi.', 'danger')
+            flash('Email tidak ditemukan! Silakan coba lagi!', 'danger')
             return redirect(url_for('login'))
     else:
         if "user_id" in session:
@@ -286,7 +287,7 @@ def user():
         if role == "admin":
             return redirect(url_for("admin"))
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
@@ -322,7 +323,7 @@ def admin():
             cursor.close()
             return render_template("admin.html", user_data=user_data, active_users=active_users, inactive_users=inactive_users, active_page=active_page, inactive_page=inactive_page, per_page=per_page, active_total=active_total, inactive_total=inactive_total)
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
@@ -342,7 +343,7 @@ def admin_user(taken_user_id):
                     cursor.execute("UPDATE user SET password = %s WHERE user_id = %s", (new_password, taken_user_id))
                     mysql.connection.commit()
                     cursor.close()
-                    flash("Password akun telah diperbarui!", 'success')
+                    flash("Password telah diperbarui!", 'success')
                     return redirect(url_for('admin_user', taken_user_id=taken_user_id))
                 else:
                     new_name = request.form['new_name']
@@ -380,7 +381,7 @@ def admin_user(taken_user_id):
                 cursor.close()
                 return render_template("admin-user.html", user_data=user_data, active_detections=active_detections, inactive_detections=inactive_detections, active_page=active_page, inactive_page=inactive_page, active_per_page=active_per_page, inactive_per_page=inactive_per_page, active_total=active_total, inactive_total=inactive_total, taken_user_id=taken_user_id)
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
@@ -406,7 +407,7 @@ def register():
                 cur.close()
                 
                 if user:
-                    flash('Email sudah digunakan. Silakan gunakan email lain.', 'danger')
+                    flash('Email sudah digunakan! Silakan gunakan email lain!', 'danger')
                     return redirect(url_for('register'))
                 else:
                     cur = mysql.connection.cursor()
@@ -419,7 +420,7 @@ def register():
             else:
                 return render_template("admin-add.html")
         else:
-            flash('Anda tidak dapat mengakses halaman ini, silahkan login kembali!', 'danger')
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
