@@ -71,7 +71,7 @@ def detect():
             features = preprocess_image(filepath)
             confidence = svm_classifier.predict_proba(features)
             max_confidence = np.max(confidence)
-            if max_confidence < 0.2:  # Treshold confidence
+            if max_confidence < 0.6: 
                 label = "Gambar tidak sesuai"
                 confidence_score = max_confidence * 100
             else:
@@ -104,7 +104,7 @@ def deteksi():
                     features = preprocess_image(filepath)
                     confidence = svm_classifier.predict_proba(features)
                     max_confidence = np.max(confidence)
-                    if max_confidence < 0.2:
+                    if max_confidence < 0.6:
                         flash('Tolong unggah gambar yang relevan dan/atau berkualitas baik!', 'danger')
                         os.remove(filepath)
                         return redirect(url_for("deteksi"))
