@@ -9,22 +9,7 @@ label {
   font-size: 19px;
   text-align: justify;
 }
-/* .alert {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-.alert p {
-  margin: 0;
-}
-.alert-success {
-  background-color: #d4edda;
-  color: #00bb2c;
-}
-.alert-danger {
-  background-color: #f8d7da;
-  color: #50050d;
-} */
+
 .delete-btn {
   position: absolute;
   top: 5px;

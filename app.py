@@ -22,20 +22,15 @@ app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'servcdet'
 mysql = MySQL(app)
 
-################################################
-
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'BMP'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-#Done
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
 
-##################################################
-
-# Load the ResNet50 model and preprocessing pipeline
+###########################################(MACHINE LEARNING)#############################################################
 print("[INFO] Loading The Machine Learning...")
 resnet_model = ResNet50(weights="imagenet", include_top=False)
 scaler = joblib.load("ml/2scaler.pkl")
@@ -82,94 +77,8 @@ def detect():
             return render_template("detect.html", label=label, confidence=confidence_score)
     return render_template("detect.html")
 
-#done
-@app.route('/user/deteksi', methods=["GET", "POST"])
-def deteksi():
-    if "user_id" in session:
-        role = session.get('role')
-        if role == "dokter":
-            if request.method == "POST":
-                nama_pasien = request.form['nameDetForm']
-                umur_pasien = request.form['ageDetForm']
-                no_pasien = request.form['phoneDetForm']
-                file = request.files['imgDetForm']
-                doct_id = session.get('user_id')
-                if file.filename == '':
-                    flash('Tolong masukkan data formulir secara lengkap!', 'danger')
-                if file:
-                    filename = secure_filename(file.filename)
-                    file_name = "det_" + str(uuid.uuid1()) + "_" + filename
-                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
-                    file.save(filepath)
-                    features = preprocess_image(filepath)
-                    confidence = svm_classifier.predict_proba(features)
-                    max_confidence = np.max(confidence)
-                    if max_confidence < 0.6:
-                        flash('Tolong unggah gambar yang relevan dan/atau berkualitas baik!', 'danger')
-                        os.remove(filepath)
-                        return redirect(url_for("deteksi"))
-                    else:
-                        prediction = svm_classifier.predict(features)
-                        label = le.inverse_transform(prediction)[0]
-                        confidence_score = confidence[0][prediction[0]] * 100
-                        cur = mysql.connection.cursor()
-                        cur.execute("INSERT INTO detection (image, label, patient_name, patient_phone, patient_age, note, user_id, confidence, status) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)", (file_name, label, nama_pasien, no_pasien, umur_pasien, '', doct_id, confidence_score, 'aktif'))
-                        mysql.connection.commit()
-                        detection_id = cur.lastrowid
-                        cur.close()
-                        return redirect(url_for('user_hasil', detection_id=detection_id))
-                        flash('Data deteksi telah disimpan!', 'success')
-            else:
-                return render_template("user-detection.html")
-        else:
-            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
-            return redirect(url_for('logout'))
-    else:
-        flash("Anda belum Login!", 'danger')
-        return redirect(url_for("login"))
-
-
-#done
-@app.route('/user/hasil-deteksi', methods=["GET", "POST"])
-def user_hasil():
-    if "user_id" in session:
-        role = session.get('role')
-        if role == "dokter":
-            detection_id = request.args.get('detection_id')
-            if request.method == "POST":
-                detection_id = request.form['detection_id']
-                note = request.form['note']
-                cur = mysql.connection.cursor()
-                cur.execute('UPDATE detection SET note = %s WHERE detection_id = %s', (note, detection_id))
-                mysql.connection.commit()
-                cur.close()
-                flash('Catatan berhasil diperbarui!', 'success')
-                return redirect(url_for('user'))
-            if detection_id:
-                cur = mysql.connection.cursor()
-                cur.execute('SELECT * FROM detection WHERE detection_id = %s AND status = %s', (detection_id, 'aktif'))
-                detection_data = cur.fetchone()
-                cur.close()
-                if detection_data:
-                    return render_template("user-detection-result.html", detection_data=detection_data)
-                else:
-                    flash('Data deteksi tidak ditemukan!', 'danger')
-                    return redirect(url_for('user'))
-            else:
-                flash('ID deteksi tidak ditemukan!', 'danger')
-                return redirect(url_for('user'))
-        else:
-            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
-            return redirect(url_for('logout'))
-    else:
-        flash("Anda belum Login!", 'danger')
-        return redirect(url_for("login"))
-
-##################################################
-
-print("[INFO] Loading The Page...")
-
-
+###########################################(FUNCTIONS)#############################################################
+#Done
 @app.route('/change_status_detection', methods=['POST'])
 def change_status_detection():
     if "user_id" in session:
@@ -213,7 +122,9 @@ def uploadpp():
             cur.close()
             flash("Foto profil anda telah diubah!", 'success')
             return redirect(url_for('user'))
-
+        
+###########################################(THE PAGE)#############################################################
+print("[INFO] Loading The Page...")
 #Done
 @app.route('/')
 def index():
@@ -262,10 +173,11 @@ def login():
             return redirect(url_for("user"))
         else:
             return render_template("login.html")
-
+        
+###########################################(DOCTOR)#############################################################
 #Done
-@app.route('/user')
-def user():
+@app.route('/doctor')
+def doctor():
     if "user_id" in session:
         role = session.get('role')
         if role == "dokter":
@@ -273,8 +185,6 @@ def user():
             cursor = mysql.connection.cursor()
             cursor.execute("SELECT * FROM user WHERE user_id = %s", (user_id,))
             user_data = cursor.fetchone()
-            cursor.execute("SELECT * FROM detection WHERE user_id = %s AND status = %s", (user_id, 'aktif'))
-            detection_data = cursor.fetchall()
             
             page = request.args.get('page', 1, type=int)
             per_page = 10
@@ -282,10 +192,254 @@ def user():
             cursor.execute("SELECT COUNT(*) FROM detection WHERE user_id = %s AND status = %s", (user_id, 'aktif'))
             total = cursor.fetchone()[0]
             
+            cursor.execute("""
+                SELECT d.detection_id, d.image, d.label, d.time, p.username AS patient_username, d.note, u.username AS doctor_username, d.confidence, p.nik
+                FROM detection d
+                JOIN patient p ON d.patient_id = p.id
+                JOIN user u ON d.user_id = u.user_id
+                WHERE d.user_id = %s AND d.status = 'aktif' LIMIt %s OFFSET %s
+            """, (user_id, per_page, offset))
+            detection_data = cursor.fetchall()
             cursor.close()
-            return render_template("user.html", user_data=user_data, detection_data=detection_data, page=page, per_page=per_page, total=total)
+            return render_template("doctor.html", user_data=user_data, detection_data=detection_data, page=page, per_page=per_page, total=total)
         if role == "admin":
             return redirect(url_for("admin"))
+        if role == "superadmin":
+            return redirect(url_for("superadmin"))
+        else:
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
+            return redirect(url_for('logout'))
+    else:
+        flash("Anda belum Login!", 'danger')
+        return redirect(url_for("login"))
+    
+#done
+@app.route('/doctor/detection', methods=["GET", "POST"])
+def doctor_detect():
+    if "user_id" in session:
+        role = session.get('role')
+        if role == "dokter":
+            cur = mysql.connection.cursor()
+            cur.execute("SELECT id, username FROM patient")
+            patients = cur.fetchall()
+            cur.close()
+
+            if request.method == "POST":
+                patient_id = request.form['patientDetForm']
+                file = request.files['imgDetForm']
+                doct_id = session.get('user_id')
+                if file.filename == '':
+                    flash('Tolong masukkan data formulir secara lengkap!', 'danger')
+                if file:
+                    filename = secure_filename(file.filename)
+                    file_name = "det_" + str(uuid.uuid1()) + "_" + filename
+                    filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+                    file.save(filepath)
+                    features = preprocess_image(filepath)
+                    confidence = svm_classifier.predict_proba(features)
+                    max_confidence = np.max(confidence)
+                    if max_confidence < 0.6:
+                        flash('Tolong unggah gambar yang relevan dan/atau berkualitas baik!', 'danger')
+                        os.remove(filepath)
+                        return redirect(url_for("doctor_detect"))
+                    else:
+                        prediction = svm_classifier.predict(features)
+                        label = le.inverse_transform(prediction)[0]
+                        confidence_score = confidence[0][prediction[0]] * 100
+                        cur = mysql.connection.cursor()
+                        cur.execute("INSERT INTO detection (image, label, patient_id, note, user_id, confidence, status) VALUES (%s,%s,%s,%s,%s,%s,%s)", (file_name, label, patient_id,'', doct_id, confidence_score, 'aktif'))
+                        mysql.connection.commit()
+                        detection_id = cur.lastrowid
+                        cur.close()
+                        return redirect(url_for('doctor_detection_result', detection_id=detection_id))
+                        flash('Data deteksi telah disimpan!', 'success')
+            else:
+                return render_template("doctor-detection.html", patients=patients)
+        else:
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
+            return redirect(url_for('logout'))
+    else:
+        flash("Anda belum Login!", 'danger')
+        return redirect(url_for("login"))
+
+#done
+@app.route('/doctor/detection-result', methods=["GET", "POST"])
+def doctor_detection_result():
+    if "user_id" in session:
+        role = session.get('role')
+        if role == "dokter":
+            user_id = session.get('user_id')
+            detection_id = request.args.get('detection_id')
+            if request.method == "POST":
+                detection_id = request.form['detection_id']
+                note = request.form['note']
+                cur = mysql.connection.cursor()
+                cur.execute('UPDATE detection SET note = %s WHERE detection_id = %s', (note, detection_id))
+                mysql.connection.commit()
+                cur.close()
+                flash('Catatan berhasil diperbarui!', 'success')
+                return redirect(url_for('doctor'))
+            if detection_id:
+                cur = mysql.connection.cursor()
+                cur.execute("""
+                    SELECT d.detection_id, d.image, d.label, d.time, p.username AS patient_username, d.note, d.user_id, d.confidence, p.nik
+                    FROM detection d
+                    JOIN patient p ON d.patient_id = p.id
+                    WHERE d.detection_id = %s AND d.user_id = %s AND d.status = 'aktif'
+                """, (detection_id, user_id))
+                detection_data = cur.fetchone()
+                cur.close()
+                if detection_data:
+                    return render_template("doctor-detection-result.html", detection_data=detection_data)
+                else:
+                    flash('Data deteksi tidak ditemukan!', 'danger')
+                    return redirect(url_for('doctor'))
+            else:
+                flash('ID deteksi tidak ditemukan!', 'danger')
+                return redirect(url_for('doctor'))
+        else:
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
+            return redirect(url_for('logout'))
+    else:
+        flash("Anda belum Login!", 'danger')
+        return redirect(url_for("login"))
+
+###########################################(ADMIN)#############################################################
+#Done
+@app.route('/admin', methods=["GET", "POST"])
+def admin():
+    if "user_id" in session:
+        role = session.get('role')
+        if role == "admin":
+            if request.method == "POST":
+                name = request.form["namePatientForm"]
+                nik = request.form["nikPatientForm"]
+                phone = request.form["phonePatientForm"]
+                birthday = request.form["birthdayPatientForm"]
+                status = request.form["statusPatientForm"]
+                
+                cur = mysql.connection.cursor()
+                cur.execute("SELECT * FROM patient WHERE nik = %s", (nik,))
+                existing_nik = cur.fetchone()
+                
+                if existing_nik:
+                    flash('Pasien dengan NIK ini sudah digunakan!', 'danger')
+                    cur.close()
+                    return redirect(url_for('admin'))
+                else:
+                    cur.execute("INSERT INTO patient (nik, username, phone, birthday, status) VALUES (%s, %s, %s, %s, %s)", (nik, name, phone, birthday, status))
+                    mysql.connection.commit()
+                    cur.close()
+                    
+                    flash("Pasien telah ditambahkan!", 'success')
+                    return redirect(url_for("admin"))
+            else:
+                user_id = session.get('user_id')
+                cursor = mysql.connection.cursor()
+                cursor.execute("SELECT * FROM user WHERE user_id = %s", (user_id,))
+                user_data = cursor.fetchone()
+
+                page = request.args.get('page', 1, type=int)
+                per_page = 10
+                offset = (page - 1) * per_page
+                cursor.execute("SELECT COUNT(*) FROM patient")
+                total = cursor.fetchone()[0]
+                
+                cursor.execute("SELECT * FROM patient LIMIT %s OFFSET %s", (per_page, offset))
+                patient_data = cursor.fetchall()
+                cursor.close()
+                return render_template("admin.html", user_data=user_data, patient_data=patient_data, page=page, per_page=per_page, total=total)
+        if role == "dokter":
+            return redirect(url_for("doctor"))
+        if role == "superadmin":
+            return redirect(url_for("superadmin"))
+        else:
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
+            return redirect(url_for('logout'))
+    else:
+        flash("Anda belum Login!", 'danger')
+        return redirect(url_for("login"))
+    
+@app.route('/admin/patient/<int:taken_patient_id>', methods=["GET", "POST"])
+def admin_patient(taken_patient_id):
+    if "user_id" in session:
+        role = session.get('role')
+        if role == "admin":
+            if request.method == 'POST':
+                new_name = request.form['new_name']
+                new_nik = request.form['new_nik']
+                new_phone = request.form['new_phone']
+                new_birthday = request.form['new_birthday']
+                new_status = request.form['new_status']
+                
+                cursor = mysql.connection.cursor()
+                cursor.execute("UPDATE patient SET username = %s, phone = %s, nik = %s, birthday = %s, status = %s WHERE id = %s", (new_name, new_phone, new_nik, new_birthday, new_status, taken_patient_id))
+                mysql.connection.commit()
+                cursor.close()
+                flash("Data pasien telah diubah!", 'success')
+                return redirect(url_for('admin_patient', taken_patient_id=taken_patient_id))
+            else:
+                cursor = mysql.connection.cursor()
+                cursor.execute("SELECT * FROM patient WHERE id = %s", (taken_patient_id,))
+                patient_data = cursor.fetchone()
+                
+                page = request.args.get('page', 1, type=int)
+                per_page = 10
+                offset = (page - 1) * per_page
+                cursor.execute("SELECT COUNT(*) FROM detection WHERE patient_id = %s", (taken_patient_id,))
+                total = cursor.fetchone()[0]
+
+                cursor.execute("""
+                    SELECT d.detection_id, d.image, d.label, d.time, p.username AS patient_username, d.note, u.username AS doctor_username, d.confidence, p.nik
+                    FROM detection d
+                    JOIN patient p ON d.patient_id = p.id
+                    JOIN user u ON d.user_id = u.user_id
+                    WHERE d.patient_id = %s AND d.status = 'aktif' LIMIt %s OFFSET %s
+                """, (taken_patient_id, per_page, offset))
+                detection_data = cursor.fetchall()
+                
+                cursor.close()
+                return render_template("admin-patient.html", taken_patient_id=taken_patient_id, patient_data=patient_data, detection_data=detection_data, page=page, per_page=per_page, total=total)
+        else:
+            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
+            return redirect(url_for('logout'))
+    else:
+        flash("Anda belum Login!", 'danger')
+        return redirect(url_for("login"))
+
+###########################################(SUPERADMIN)#############################################################
+#Done   
+@app.route('/superadmin/add', methods=["GET", "POST"])
+def register():
+    if "user_id" in session:
+        role = session.get('role')
+        if role == "superadmin":
+            if request.method == "POST":
+                username = request.form["usernameRegForm"]
+                phone = request.form["phoneRegForm"]
+                email = request.form["emailRegForm"]
+                role = request.form["roleRegForm"]
+                password = request.form["passRegForm"]
+                hashed_password = generate_password_hash(password)
+                
+                cur = mysql.connection.cursor()
+                cur.execute("SELECT * FROM user WHERE email = %s", (email,))
+                user = cur.fetchone()
+                cur.close()
+                
+                if user:
+                    flash('Email sudah digunakan! Silakan gunakan email lain!', 'danger')
+                    return redirect(url_for('register'))
+                else:
+                    cur = mysql.connection.cursor()
+                    cur.execute("INSERT INTO user (username, phone, email, password, role, status, profile_picture) VALUES (%s, %s, %s, %s, %s, %s, %s)", (username, phone, email, hashed_password, role, 'aktif', 'user-black.png'))
+                    mysql.connection.commit()
+                    cur.close()
+                    
+                    flash("Akun pengguna telah ditambahkan!", 'success')
+                    return redirect(url_for("superadmin"))
+            else:
+                return render_template("superadmin-add.html")
         else:
             flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
@@ -294,11 +448,11 @@ def user():
         return redirect(url_for("login"))
     
 #Done
-@app.route('/admin')
-def admin():
+@app.route('/superadmin')
+def superadmin():
     if "user_id" in session:
         role = session.get('role')
-        if role == "admin":
+        if role == "superadmin":
             user_id = session.get('user_id')
             cursor = mysql.connection.cursor()
             cursor.execute("SELECT * FROM user WHERE user_id = %s", (user_id,))
@@ -309,32 +463,32 @@ def admin():
             per_page = 10
 
             active_offset = (active_page - 1) * per_page
-            cursor.execute("SELECT COUNT(*) FROM user WHERE role = %s AND status = %s", ('dokter', 'aktif'))
+            cursor.execute("SELECT COUNT(*) FROM user WHERE status = %s", ('aktif',))
             active_total = cursor.fetchone()[0]
-            cursor.execute("SELECT * FROM user WHERE role = %s AND status = %s LIMIT %s OFFSET %s", ('dokter', 'aktif', per_page, active_offset))
+            cursor.execute("SELECT * FROM user WHERE status = %s LIMIT %s OFFSET %s", ('aktif', per_page, active_offset))
             active_users = cursor.fetchall()
 
             inactive_offset = (inactive_page - 1) * per_page
-            cursor.execute("SELECT COUNT(*) FROM user WHERE role = %s AND status = %s", ('dokter', 'non-aktif'))
+            cursor.execute("SELECT COUNT(*) FROM user WHERE status = %s", ('non-aktif',))
             inactive_total = cursor.fetchone()[0]
-            cursor.execute("SELECT * FROM user WHERE role = %s AND status = %s LIMIT %s OFFSET %s", ('dokter', 'non-aktif', per_page, inactive_offset))
+            cursor.execute("SELECT * FROM user WHERE status = %s LIMIT %s OFFSET %s", ('non-aktif', per_page, inactive_offset))
             inactive_users = cursor.fetchall()
 
             cursor.close()
-            return render_template("admin.html", user_data=user_data, active_users=active_users, inactive_users=inactive_users, active_page=active_page, inactive_page=inactive_page, per_page=per_page, active_total=active_total, inactive_total=inactive_total)
+            return render_template("superadmin.html", user_data=user_data, active_users=active_users, inactive_users=inactive_users, active_page=active_page, inactive_page=inactive_page, per_page=per_page, active_total=active_total, inactive_total=inactive_total)
         else:
             flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))
     else:
         flash("Anda belum Login!", 'danger')
         return redirect(url_for("login"))
-
+    
 #Done
-@app.route('/admin/user/<int:taken_user_id>', methods=['GET', 'POST'])
-def admin_user(taken_user_id):
+@app.route('/superadmin/user/<int:taken_user_id>', methods=['GET', 'POST'])
+def superadmin_user(taken_user_id):
     if "user_id" in session:
         role = session.get('role')
-        if role == "admin":
+        if role == "superadmin":
             if request.method == 'POST':
                 if 'new_password' in request.form:
                     password = request.form['new_password']
@@ -355,70 +509,45 @@ def admin_user(taken_user_id):
                     cursor.execute("UPDATE user SET username = %s, phone = %s, email = %s, status = %s WHERE user_id = %s", (new_name, new_phone, new_email, new_status, taken_user_id))
                     mysql.connection.commit()
                     cursor.close()
-                    flash("Akun dokter telah diubah!", 'success')
-                    return redirect(url_for('admin_user', taken_user_id=taken_user_id))
+                    flash("Data pengguna telah diubah!", 'success')
+                    return redirect(url_for('superadmin_user', taken_user_id=taken_user_id))
             else:
                 cursor = mysql.connection.cursor()
                 cursor.execute("SELECT * FROM user WHERE user_id = %s", (taken_user_id,))
                 user_data = cursor.fetchone()
 
                 active_page = request.args.get('active_page', 1, type=int)
-                active_per_page = 10
-                active_offset = (active_page - 1) * active_per_page
+                inactive_page = request.args.get('inactive_page', 1, type=int)
+                per_page = 10
+                
+                active_offset = (active_page - 1) * per_page
                 cursor.execute("SELECT COUNT(*) FROM detection WHERE user_id = %s AND status = 'aktif'", (taken_user_id,))
                 active_total = cursor.fetchone()[0]
-                cursor.execute("SELECT * FROM detection WHERE user_id = %s AND status = 'aktif' LIMIT %s OFFSET %s", (taken_user_id, active_per_page, active_offset))
+                
+                cursor.execute("""
+                    SELECT d.detection_id, d.image, d.label, d.time, p.username AS patient_username, d.note, u.username AS doctor_username, d.confidence, p.nik, d.status
+                    FROM detection d
+                    JOIN patient p ON d.patient_id = p.id
+                    JOIN user u ON d.user_id = u.user_id
+                    WHERE d.user_id = %s AND d.status = 'aktif' LIMIT %s OFFSET %s
+                """, (taken_user_id, per_page, active_offset))
                 active_detections = cursor.fetchall()
 
-                inactive_page = request.args.get('inactive_page', 1, type=int)
-                inactive_per_page = 10
-                inactive_offset = (inactive_page - 1) * inactive_per_page
+                inactive_offset = (inactive_page - 1) * per_page
                 cursor.execute("SELECT COUNT(*) FROM detection WHERE user_id = %s AND status = 'non-aktif'", (taken_user_id,))
                 inactive_total = cursor.fetchone()[0]
-                cursor.execute("SELECT * FROM detection WHERE user_id = %s AND status = 'non-aktif' LIMIT %s OFFSET %s", (taken_user_id, inactive_per_page, inactive_offset))
+                
+                cursor.execute("""
+                    SELECT d.detection_id, d.image, d.label, d.time, p.username AS patient_username, d.note, u.username AS doctor_username, d.confidence, p.nik,  d.status
+                    FROM detection d
+                    JOIN patient p ON d.patient_id = p.id
+                    JOIN user u ON d.user_id = u.user_id
+                    WHERE d.user_id = %s AND d.status = 'non-aktif' LIMIT %s OFFSET %s
+                """, (taken_user_id, per_page, inactive_offset))
                 inactive_detections = cursor.fetchall()
                 
                 cursor.close()
-                return render_template("admin-user.html", user_data=user_data, active_detections=active_detections, inactive_detections=inactive_detections, active_page=active_page, inactive_page=inactive_page, active_per_page=active_per_page, inactive_per_page=inactive_per_page, active_total=active_total, inactive_total=inactive_total, taken_user_id=taken_user_id)
-        else:
-            flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
-            return redirect(url_for('logout'))
-    else:
-        flash("Anda belum Login!", 'danger')
-        return redirect(url_for("login"))
-
- 
-#Done   
-@app.route('/admin/add', methods=["GET", "POST"])
-def register():
-    if "user_id" in session:
-        role = session.get('role')
-        if role == "admin":
-            if request.method == "POST":
-                username = request.form["usernameRegForm"]
-                phone = request.form["phoneRegForm"]
-                email = request.form["emailRegForm"]
-                password = request.form["passRegForm"]
-                hashed_password = generate_password_hash(password)
-                
-                cur = mysql.connection.cursor()
-                cur.execute("SELECT * FROM user WHERE email = %s", (email,))
-                user = cur.fetchone()
-                cur.close()
-                
-                if user:
-                    flash('Email sudah digunakan! Silakan gunakan email lain!', 'danger')
-                    return redirect(url_for('register'))
-                else:
-                    cur = mysql.connection.cursor()
-                    cur.execute("INSERT INTO user (username, phone, email, password, role, status, profile_picture) VALUES (%s, %s, %s, %s, %s, %s, %s)", (username, phone, email, hashed_password, 'dokter', 'aktif', 'NULL'))
-                    mysql.connection.commit()
-                    cur.close()
-                    
-                    flash("Akun dokter telah ditambahkan!", 'success')
-                    return redirect(url_for('admin'))
-            else:
-                return render_template("admin-add.html")
+                return render_template("superadmin-user.html", user_data=user_data, active_detections=active_detections, inactive_detections=inactive_detections, active_page=active_page, inactive_page=inactive_page, per_page=per_page, active_total=active_total, inactive_total=inactive_total, taken_user_id=taken_user_id)
         else:
             flash('Anda tidak dapat mengakses halaman ini! Silahkan login kembali!', 'danger')
             return redirect(url_for('logout'))

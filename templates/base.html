@@ -32,6 +32,17 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"
     />
+    <link
+      rel="stylesheet"
+      href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <link
+      href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     <style>
       body {
         font-family: "Radiance";
@@ -59,21 +70,21 @@
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         font-family: "Radiance";
       }
-    
+
       .slide-in {
-        bottom: 20px; 
+        bottom: 20px;
       }
-    
+
       .alert p {
         margin: 0;
       }
-    
+
       .alert-success {
         background-color: #5cb85c;
         color: #fff;
         border-color: #5cb85c;
       }
-    
+
       .alert-danger {
         background-color: #d9534f;
         color: #fff;
@@ -116,20 +127,26 @@
                     >Admin</a
                   >
                 </li>
-                <li>
-                  <a class="dropdown-item" href="{{ url_for('register') }}"
-                    >Tambah Dokter</a
-                  >
-                </li>
                 {% elif session.get('role') == "dokter" %}
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('user') }}"
-                    >Pengguna</a
+                  <a class="dropdown-item" href="{{ url_for('doctor') }}"
+                    >Dokter</a
                   >
                 </li>
                 <li>
-                  <a class="dropdown-item" href="{{ url_for('deteksi') }}"
+                  <a class="dropdown-item" href="{{ url_for('doctor_detect') }}"
                     >Deteksi</a
+                  >
+                </li>
+                {% elif session.get('role') == "superadmin" %}
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('superadmin') }}"
+                    >Super Admin</a
+                  >
+                </li>
+                <li>
+                  <a class="dropdown-item" href="{{ url_for('register') }}"
+                    >Tambah Pengguna</a
                   >
                 </li>
                 {% endif %}
@@ -167,7 +184,7 @@
     <!-- Footer -->
     <footer
       class="w3-padding-48 w3-sm text-white"
-      style="background-color: #14335f"
+      style="background-color: #14335f; height: 250px"
     >
       <h2 class="w3-center">ServcDet</h2>
     </footer>
