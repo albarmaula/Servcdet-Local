@@ -23,12 +23,12 @@ app.config['MYSQL_DB'] = 'servcdet'
 mysql = MySQL(app)
 
 UPLOAD_FOLDER = 'static/uploads'
-ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'BMP'}
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif', 'svg', 'webp', 'heic', 'ico', 'raw', 'dng', 'ai', 'eps', 'psd', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 def allowed_file(filename):
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_EXTENSIONS']
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ###########################################(MACHINE LEARNING)#############################################################
 print("[INFO] Loading The Machine Learning...")
@@ -110,7 +110,7 @@ def change_status_detection():
 def uploadpp():
     if request.method == 'POST':
         uploaded_file = request.files['file']
-        if uploaded_file.filename != '':
+        if uploaded_file and allowed_file(uploaded_file.filename):
             filename = secure_filename(uploaded_file.filename)
             pic_name = "pp_" + str(uuid.uuid1()) + "_" + filename
             uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
@@ -121,7 +121,11 @@ def uploadpp():
             mysql.connection.commit()
             cur.close()
             flash("Foto profil anda telah diubah!", 'success')
-            return redirect(url_for('user'))
+            return redirect(url_for('doctor'))
+        else:
+            flash('Tolong unggah file gambar dengan ekstensi yang benar!', 'danger')
+            return redirect(url_for('doctor'))
+
         
 ###########################################(THE PAGE)#############################################################
 print("[INFO] Loading The Page...")
@@ -230,7 +234,7 @@ def doctor_detect():
                 doct_id = session.get('user_id')
                 if file.filename == '':
                     flash('Tolong masukkan data formulir secara lengkap!', 'danger')
-                if file:
+                if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file_name = "det_" + str(uuid.uuid1()) + "_" + filename
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
@@ -253,6 +257,9 @@ def doctor_detect():
                         cur.close()
                         return redirect(url_for('doctor_detection_result', detection_id=detection_id))
                         flash('Data deteksi telah disimpan!', 'success')
+                else:
+                    flash('Tolong unggah file gambar dengan ekstensi yang benar!', 'danger')
+                    return redirect(url_for("doctor_detect"))
             else:
                 return render_template("doctor-detection.html", patients=patients)
         else:
