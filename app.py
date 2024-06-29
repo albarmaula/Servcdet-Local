@@ -33,9 +33,9 @@ def allowed_file(filename):
 ###########################################(MACHINE LEARNING)#############################################################
 print("[INFO] Loading The Machine Learning...")
 resnet_model = ResNet50(weights="imagenet", include_top=False)
-scaler = joblib.load("ml/2scaler.pkl")
-pca = joblib.load("ml/2pca.pkl")
-svm_classifier = joblib.load("ml/2svm_classifier.pkl")
+scaler = joblib.load("ml/.2scaler.pkl")
+pca = joblib.load("ml/.2pca.pkl")
+svm_classifier = joblib.load("ml/.2svm_classifier.pkl")
 with open("ml/2le.cpickle", "rb") as f:
     le = pickle.load(f)
 
