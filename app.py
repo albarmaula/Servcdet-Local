@@ -12,6 +12,7 @@ from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tensorflow.keras.applications import ResNet50, imagenet_utils
 from tensorflow.keras.models import load_model
 import joblib
+from PIL import Image
 
 app = Flask(__name__)
 app.secret_key = "1234567890"
@@ -114,7 +115,10 @@ def uploadpp():
             filename = secure_filename(uploaded_file.filename)
             pic_name = "pp_" + str(uuid.uuid1()) + "_" + filename
             uploaded_file.save(os.path.join(app.config['UPLOAD_FOLDER'], pic_name))
-            
+            image = Image.open(uploaded_file)
+            if image.width < 100 or image.height < 100:
+                flash('Gambar anda terlalu kecil! Tolong unggah gambar berkualitas baik!', 'danger')
+                return redirect(url_for("doctor"))
             user_id = session.get('user_id')
             cur = mysql.connection.cursor()
             cur.execute("UPDATE user SET profile_picture = %s WHERE user_id = %s", (pic_name, user_id))
@@ -234,10 +238,15 @@ def doctor_detect():
                 doct_id = session.get('user_id')
                 if file.filename == '':
                     flash('Tolong masukkan data formulir secara lengkap!', 'danger')
+                    return redirect(url_for("doctor_detect"))
                 if file and allowed_file(file.filename):
                     filename = secure_filename(file.filename)
                     file_name = "det_" + str(uuid.uuid1()) + "_" + filename
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
+                    image = Image.open(file)
+                    if image.width < 100 or image.height < 100:
+                        flash('Gambar anda terlalu kecil! Tolong unggah gambar berkualitas baik!', 'danger')
+                        return redirect(url_for("doctor_detect"))
                     file.save(filepath)
                     features = preprocess_image(filepath)
                     confidence = svm_classifier.predict_proba(features)
