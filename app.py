@@ -243,29 +243,34 @@ def doctor_detect():
                     filename = secure_filename(file.filename)
                     file_name = "det_" + str(uuid.uuid1()) + "_" + filename
                     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_name)
-                    image = Image.open(file)
-                    if image.width < 100 or image.height < 100:
-                        flash('Gambar anda terlalu kecil! Tolong unggah gambar berkualitas baik!', 'danger')
-                        return redirect(url_for("doctor_detect"))
                     file.save(filepath)
-                    features = preprocess_image(filepath)
-                    confidence = svm_classifier.predict_proba(features)
-                    max_confidence = np.max(confidence)
-                    if max_confidence < 0.6:
+                    try:
+                        image = Image.open(filepath)
+                        features = preprocess_image(filepath)
+                        confidence = svm_classifier.predict_proba(features)
+                        max_confidence = np.max(confidence)
+                        if max_confidence < 0.6 or image.width < 100 or image.height < 100:
+                            flash('Tolong unggah gambar yang relevan dan/atau berkualitas baik!', 'danger')
+                            image.close()
+                            os.remove(filepath)
+                            return redirect(url_for("doctor_detect"))
+                        else:
+                            prediction = svm_classifier.predict(features)
+                            label = le.inverse_transform(prediction)[0]
+                            confidence_score = confidence[0][prediction[0]] * 100
+                            cur = mysql.connection.cursor()
+                            cur.execute("INSERT INTO detection (image, label, patient_id, note, user_id, confidence, status) VALUES (%s,%s,%s,%s,%s,%s,%s)", (file_name, label, patient_id, '', doct_id, confidence_score, 'aktif'))
+                            mysql.connection.commit()
+                            detection_id = cur.lastrowid
+                            cur.close()
+                            flash('Data deteksi telah disimpan!', 'success')
+                            return redirect(url_for('doctor_detection_result', detection_id=detection_id))
+                    except Exception as e:
                         flash('Tolong unggah gambar yang relevan dan/atau berkualitas baik!', 'danger')
+                        if 'image' in locals():
+                            image.close()
                         os.remove(filepath)
                         return redirect(url_for("doctor_detect"))
-                    else:
-                        prediction = svm_classifier.predict(features)
-                        label = le.inverse_transform(prediction)[0]
-                        confidence_score = confidence[0][prediction[0]] * 100
-                        cur = mysql.connection.cursor()
-                        cur.execute("INSERT INTO detection (image, label, patient_id, note, user_id, confidence, status) VALUES (%s,%s,%s,%s,%s,%s,%s)", (file_name, label, patient_id,'', doct_id, confidence_score, 'aktif'))
-                        mysql.connection.commit()
-                        detection_id = cur.lastrowid
-                        cur.close()
-                        return redirect(url_for('doctor_detection_result', detection_id=detection_id))
-                        flash('Data deteksi telah disimpan!', 'success')
                 else:
                     flash('Tolong unggah file gambar dengan ekstensi yang benar!', 'danger')
                     return redirect(url_for("doctor_detect"))
