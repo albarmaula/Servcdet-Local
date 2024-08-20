@@ -19,7 +19,7 @@ app.secret_key = "1234567890"
 
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_USER'] = 'root'
-app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_PASSWORD'] = '123456'
 app.config['MYSQL_DB'] = 'servcdet'
 mysql = MySQL(app)
 
@@ -519,7 +519,7 @@ def superadmin_user(taken_user_id):
                     mysql.connection.commit()
                     cursor.close()
                     flash("Password telah diperbarui!", 'success')
-                    return redirect(url_for('admin_user', taken_user_id=taken_user_id))
+                    return redirect(url_for('superadmin_user', taken_user_id=taken_user_id))
                 else:
                     new_name = request.form['new_name']
                     new_phone = request.form['new_phone']
